@@ -20,6 +20,22 @@ def crop_center(image, crop_ratio: float = 0.2):
     return image[y1:y2, x1:x2]
 
 
+def extract_dominant_color(pixels, k: int = 3):
+    pixels = np.float32(pixels)
+
+    cv2.setRNGSeed(42)
+
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.5)
+    _, labels, centers = cv2.kmeans(
+        pixels, k, None, criteria, attempts=5, flags=cv2.KMEANS_PP_CENTERS
+    )
+
+    counts = np.bincount(labels.flatten())
+    dominant_center = centers[np.argmax(counts)]
+
+    return dominant_center.astype(int)
+
+
 def detect_dominant_color(image_bytes: bytes):
     np_array = np.frombuffer(image_bytes, np.uint8)
     image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
@@ -32,9 +48,7 @@ def detect_dominant_color(image_bytes: bytes):
     center_crop = crop_center(image_rgb)
 
     pixels = center_crop.reshape((-1, 3))
-    average_color = pixels.mean(axis=0)
-
-    r, g, b = average_color.astype(int)
+    r, g, b = extract_dominant_color(pixels)
     rgb = [int(r), int(g), int(b)]
 
     return map_rgb_to_color(rgb)
