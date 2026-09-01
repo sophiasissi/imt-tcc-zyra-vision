@@ -186,6 +186,7 @@ def map_rgb_to_color(rgb: list[int]):
             "colorName": neutral["colorName"],
             "hex": rgb_to_hex(rgb),
             "colorAddSymbol": neutral["colorAddSymbol"],
+            "warningCode": warning_code,
         }
 
     special_case = detect_special_cases(rgb)
@@ -195,6 +196,7 @@ def map_rgb_to_color(rgb: list[int]):
             "colorName": special_case["colorName"],
             "hex": rgb_to_hex(rgb),
             "colorAddSymbol": special_case["colorAddSymbol"],
+            "warningCode": warning_code,
         }
 
     closest_color = min(
