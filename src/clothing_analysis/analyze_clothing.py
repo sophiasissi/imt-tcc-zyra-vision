@@ -9,6 +9,7 @@ from PIL import Image, UnidentifiedImageError
 
 from src.clothing_analysis.taxonomy import (
     CATEGORIES,
+    MATERIALS,
     OCCASIONS,
     PATTERNS,
     STYLES,
@@ -32,12 +33,13 @@ Analise a imagem e responda SOMENTE JSON com:
   "style": string | null,
   "pattern": string | null,
   "warmth": string | null,
+  "material": string | null,
   "occasions": string[]
 }}
 
 Regras:
-- category, style, pattern, warmth e occasions devem usar EXATAMENTE um dos
-  códigos das listas abaixo (em maiúsculas). Se nenhum servir, use null.
+- category, style, pattern, warmth, material e occasions devem usar EXATAMENTE
+  um dos códigos das listas abaixo (em maiúsculas). Se nenhum servir, use null.
 - category:
 {describe(CATEGORIES)}
 - style:
@@ -48,6 +50,8 @@ Regras:
 {describe(OCCASIONS)}
 - warmth: o quanto a peça esquenta, pela espessura e pelo material visíveis:
 {describe(WARMTH)}
+- material: só se for claramente um destes; qualquer outro material é null:
+{describe(MATERIALS)}
 """
 
 
@@ -112,5 +116,6 @@ def analyze_clothing(image_bytes: bytes):
         "style": normalize_value(data.get("style"), STYLES),
         "pattern": normalize_value(data.get("pattern"), PATTERNS),
         "warmth": normalize_value(data.get("warmth"), WARMTH),
+        "material": normalize_value(data.get("material"), MATERIALS),
         "occasions": normalized_occasions,
     }

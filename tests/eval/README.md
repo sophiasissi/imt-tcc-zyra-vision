@@ -1,6 +1,6 @@
 # Avaliação do `/analyze-clothing`
 
-Mede se a IA acerta categoria, estilo, estampa, aquecimento e ocasiões.
+Mede se a IA acerta categoria, estilo, estampa, aquecimento, material e ocasiões.
 
 ## Como montar o conjunto
 
@@ -9,8 +9,9 @@ Mede se a IA acerta categoria, estilo, estampa, aquecimento e ocasiões.
 3. Preencha o `labels.csv`, uma linha por foto, com os códigos de `src/clothing_analysis/taxonomy.py`:
 
 ```csv
-arquivo,category,style,pattern,warmth,occasions
-camisa-azul.jpg,CAMISA,SOCIAL,LISO,MEDIO,TRABALHO|FESTA
+arquivo,category,style,pattern,warmth,material,occasions
+camisa-azul.jpg,CAMISA,SOCIAL,LISO,MEDIO,,TRABALHO|FESTA
+calca-jeans.jpg,CALCA,CASUAL,LISO,MEDIO,JEANS,DIA_A_DIA
 ```
 
 Campo vazio não é avaliado. Em `occasions`, separe os valores com `|`.

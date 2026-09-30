@@ -19,6 +19,7 @@ from pathlib import Path
 
 from src.clothing_analysis.taxonomy import (
     CATEGORIES,
+    MATERIALS,
     OCCASIONS,
     PATTERNS,
     STYLES,
@@ -32,6 +33,7 @@ SINGLE_FIELDS = {
     "style": STYLES,
     "pattern": PATTERNS,
     "warmth": WARMTH,
+    "material": MATERIALS,
 }
 
 

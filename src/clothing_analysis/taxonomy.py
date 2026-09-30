@@ -51,6 +51,13 @@ WARMTH = {
     "QUENTE": "para frio (moletom, trico, casaco, bota)",
 }
 
+# So materiais que da para reconhecer pela foto e que o usuario usa para se
+# referir a peca ("minha calca jeans"). Algodao, poliester etc. ficam null.
+MATERIALS = {
+    "JEANS": "jeans, denim",
+    "COURO": "couro ou couro sintetico",
+}
+
 
 def normalize_value(value, allowed: dict):
     """
