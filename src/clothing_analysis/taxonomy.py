@@ -45,6 +45,12 @@ OCCASIONS = {
     "CASA": "ficar em casa, dormir",
 }
 
+WARMTH = {
+    "LEVE": "fresca, para calor (regata, linho, short, vestido leve, sandalia)",
+    "MEDIO": "meia-estacao (camiseta, camisa, calca jeans, tenis)",
+    "QUENTE": "para frio (moletom, trico, casaco, bota)",
+}
+
 
 def normalize_value(value, allowed: dict):
     """

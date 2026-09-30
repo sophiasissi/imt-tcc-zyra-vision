@@ -12,6 +12,7 @@ from src.clothing_analysis.taxonomy import (
     OCCASIONS,
     PATTERNS,
     STYLES,
+    WARMTH,
     describe,
     normalize_value,
 )
@@ -30,13 +31,13 @@ Analise a imagem e responda SOMENTE JSON com:
   "category": string | null,
   "style": string | null,
   "pattern": string | null,
-  "fabric": string | null,
+  "warmth": string | null,
   "occasions": string[]
 }}
 
 Regras:
-- category, style, pattern e occasions devem usar EXATAMENTE um dos códigos
-  das listas abaixo (em maiúsculas). Se nenhum servir, use null.
+- category, style, pattern, warmth e occasions devem usar EXATAMENTE um dos
+  códigos das listas abaixo (em maiúsculas). Se nenhum servir, use null.
 - category:
 {describe(CATEGORIES)}
 - style:
@@ -45,8 +46,8 @@ Regras:
 {describe(PATTERNS)}
 - occasions: todas as ocasiões em que a peça funciona (de 1 a 3):
 {describe(OCCASIONS)}
-- fabric é texto livre, em minúsculas, com o material predominante
-  (ex: algodão, jeans, couro, linho, malha, poliéster, lã, seda, veludo).
+- warmth: o quanto a peça esquenta, pela espessura e pelo material visíveis:
+{describe(WARMTH)}
 """
 
 
@@ -106,12 +107,10 @@ def analyze_clothing(image_bytes: bytes):
         if value and value not in normalized_occasions:
             normalized_occasions.append(value)
 
-    fabric = data.get("fabric")
-
     return {
         "category": normalize_value(data.get("category"), CATEGORIES),
         "style": normalize_value(data.get("style"), STYLES),
         "pattern": normalize_value(data.get("pattern"), PATTERNS),
-        "fabric": fabric.strip().lower() if isinstance(fabric, str) else None,
+        "warmth": normalize_value(data.get("warmth"), WARMTH),
         "occasions": normalized_occasions,
     }
