@@ -1,7 +1,7 @@
 import io
 
 import torch
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from transformers import CLIPModel, CLIPProcessor
 
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
@@ -35,7 +35,10 @@ INVALID_LABELS = {
 }
 
 def validate_clothing(image_bytes: bytes):
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    try:
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    except UnidentifiedImageError:
+        raise ValueError("Imagem inválida")
 
     inputs = processor(
         text=LABELS,
