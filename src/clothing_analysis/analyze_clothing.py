@@ -20,7 +20,52 @@ from src.clothing_analysis.taxonomy import (
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Modelo configuravel por ambiente, para trocar sem mexer no codigo.
+MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+# A foto do celular chega com resolucao cheia. Para reconhecer a peca isso e'
+# desperdicio: o custo da chamada cresce com o tamanho da imagem, e 512px de
+# lado bastam.
+MAX_LADO = 512
+JPEG_QUALIDADE = 80
+
+_cliente = None
+
+
+def get_cliente() -> OpenAI:
+    """
+    Cria o cliente da OpenAI na primeira chamada, nao na importacao do modulo.
+
+    Instanciado no nivel do modulo, sem a chave no ambiente o simples `import`
+    levantava OpenAIError e derrubava a API INTEIRA -- incluindo /detect-color
+    e /validate-clothing, que nao dependem da OpenAI.
+    """
+    global _cliente
+
+    if _cliente is None:
+        chave = os.getenv("OPENAI_API_KEY")
+
+        if not chave:
+            raise RuntimeError(
+                "OPENAI_API_KEY nao configurada. Defina no .env do servico de visao."
+            )
+
+        _cliente = OpenAI(api_key=chave)
+
+    return _cliente
+
+
+def reduzir_imagem(image_bytes: bytes, max_lado: int = MAX_LADO) -> bytes:
+    """Reduz a foto antes de enviar, para diminuir custo e latencia."""
+    imagem = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+
+    if max(imagem.size) > max_lado:
+        imagem.thumbnail((max_lado, max_lado), Image.LANCZOS)
+
+    buffer = io.BytesIO()
+    imagem.save(buffer, format="JPEG", quality=JPEG_QUALIDADE)
+
+    return buffer.getvalue()
 
 SYSTEM_PROMPT = f"""
 Você é um analisador de roupas para um aplicativo de moda acessível.
@@ -57,18 +102,15 @@ Regras:
 
 def analyze_clothing(image_bytes: bytes):
     try:
-        image = Image.open(io.BytesIO(image_bytes))
-        image_format = image.format
-        image.verify()
+        Image.open(io.BytesIO(image_bytes)).verify()
     except (UnidentifiedImageError, OSError, SyntaxError):
         raise ValueError("Imagem inválida")
 
-    mime_type = Image.MIME.get(image_format, "image/jpeg")
+    # Sempre reenviada como JPEG reduzido, qualquer que seja o formato original.
+    base64_image = base64.b64encode(reduzir_imagem(image_bytes)).decode("utf-8")
 
-    base64_image = base64.b64encode(image_bytes).decode("utf-8")
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
+    response = get_cliente().chat.completions.create(
+        model=MODEL,
         temperature=0,
         response_format={"type": "json_object"},
         messages=[
@@ -86,7 +128,7 @@ def analyze_clothing(image_bytes: bytes):
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": f"data:{mime_type};base64,{base64_image}"
+                            "url": f"data:image/jpeg;base64,{base64_image}"
                         },
                     },
                 ],
