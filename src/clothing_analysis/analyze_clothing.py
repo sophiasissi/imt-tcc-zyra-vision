@@ -7,9 +7,52 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from PIL import Image, UnidentifiedImageError
 
+from src.clothing_analysis.taxonomy import (
+    CATEGORIES,
+    MATERIALS,
+    OCCASIONS,
+    PATTERNS,
+    STYLES,
+    WARMTH,
+    describe,
+    normalize_value,
+)
+
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+SYSTEM_PROMPT = f"""
+Você é um analisador de roupas para um aplicativo de moda acessível.
+A imagem já foi validada como uma peça de roupa.
+
+Analise a imagem e responda SOMENTE JSON com:
+
+{{
+  "category": string | null,
+  "style": string | null,
+  "pattern": string | null,
+  "warmth": string | null,
+  "material": string | null,
+  "occasions": string[]
+}}
+
+Regras:
+- category, style, pattern, warmth, material e occasions devem usar EXATAMENTE
+  um dos códigos das listas abaixo (em maiúsculas). Se nenhum servir, use null.
+- category:
+{describe(CATEGORIES)}
+- style:
+{describe(STYLES)}
+- pattern:
+{describe(PATTERNS)}
+- occasions: todas as ocasiões em que a peça funciona (de 1 a 3):
+{describe(OCCASIONS)}
+- warmth: o quanto a peça esquenta, pela espessura e pelo material visíveis:
+{describe(WARMTH)}
+- material: só se for claramente um destes; qualquer outro material é null:
+{describe(MATERIALS)}
+"""
 
 
 def analyze_clothing(image_bytes: bytes):
@@ -31,34 +74,7 @@ def analyze_clothing(image_bytes: bytes):
         messages=[
             {
                 "role": "system",
-                "content": """
-                Você é um analisador de roupas para um aplicativo de moda acessível.
-                A imagem já foi validada como uma peça de roupa.
-
-                Analise a imagem e responda SOMENTE JSON com:
-
-                {
-                  "category": string | null,
-                  "style": string | null,
-                  "pattern": string | null,
-                  "fabric": string | null,
-                  "occasion": string | null
-                }
-
-                Regras:
-                - Use sempre adjetivos no masculino (ex: "liso", nunca "lisa"),
-                  independentemente do gênero gramatical da peça
-                - category pode ser:
-                  camiseta, camisa, moletom, calça, short, saia, vestido, jaqueta, blazer, sapato, tenis, bolsa
-                - style pode ser:
-                  casual, social, esportivo, streetwear, elegante, basico
-                - pattern descreve estampa:
-                  liso, estampado, listrado, xadrez, logo frontal, etc
-                - fabric descreve o material predominante:
-                  algodão, jeans, couro, linho, malha, poliéster, lã, seda, veludo, etc
-                - occasion pode ser:
-                  praia, trabalho, festa, academia, dia-a-dia, casa
-                """,
+                "content": SYSTEM_PROMPT,
             },
             {
                 "role": "user",
@@ -81,6 +97,25 @@ def analyze_clothing(image_bytes: bytes):
     content = response.choices[0].message.content
 
     try:
-        return json.loads(content)
+        data = json.loads(content)
     except json.JSONDecodeError:
         raise ValueError("Resposta inválida da IA")
+
+    occasions = data.get("occasions") or []
+    if not isinstance(occasions, list):
+        occasions = [occasions]
+
+    normalized_occasions = []
+    for occasion in occasions:
+        value = normalize_value(occasion, OCCASIONS)
+        if value and value not in normalized_occasions:
+            normalized_occasions.append(value)
+
+    return {
+        "category": normalize_value(data.get("category"), CATEGORIES),
+        "style": normalize_value(data.get("style"), STYLES),
+        "pattern": normalize_value(data.get("pattern"), PATTERNS),
+        "warmth": normalize_value(data.get("warmth"), WARMTH),
+        "material": normalize_value(data.get("material"), MATERIALS),
+        "occasions": normalized_occasions,
+    }

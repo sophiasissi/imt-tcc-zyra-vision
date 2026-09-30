@@ -10,6 +10,7 @@ processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 LABELS = [
     "a clothing item",
     "a pair of shoes",
+    "a handbag or backpack",
     "a hat or cap",
     "a clothing item held by a person",
     "a full body photo of a person",
@@ -23,11 +24,14 @@ LABELS = [
 VALID_CLOTHING_LABELS = {
     "a clothing item",
     "a pair of shoes",
-    "a hat or cap",
+    "a handbag or backpack",
     "a clothing item held by a person",
 }
 
+# Bone e chapeu continuam como label para o CLIP ter onde encaixa-los (senao
+# caem em "a clothing item"), mas nao sao cadastraveis: nao entram em looks.
 INVALID_LABELS = {
+    "a hat or cap",
     "a portrait photo",
     "a selfie",
     "a person posing",
@@ -71,7 +75,7 @@ def validate_clothing(image_bytes: bytes):
     best_clothing_score = max(
         scores["a clothing item"],
         scores["a pair of shoes"],
-        scores["a hat or cap"],
+        scores["a handbag or backpack"],
         scores["a clothing item held by a person"],
     )
 
