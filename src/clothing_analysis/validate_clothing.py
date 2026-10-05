@@ -31,6 +31,7 @@ PERSON_STAGE_LABELS = [
     "a pair of shoes",
     "a handbag or backpack",
     "a hat or cap",
+    "a necktie",
     "a clothing item held by a person",
     "a full body photo of a person",
     "a person wearing clothes",
@@ -58,9 +59,9 @@ PERSON_STAGE_CLOTHING_LABELS = {
 # Rotulos que, quando vencem sozinhos, indicam uma foto de pessoa.
 PORTRAIT_LABELS = {"a portrait photo", "a selfie", "a person posing"}
 
-# Bone e chapeu continuam como rotulo para o CLIP ter onde encaixa-los (senao
+# Bone, chapeu e gravata continuam como rotulo para o CLIP ter onde encaixa-los (senao
 # caem em "a clothing item"), mas quando vencem a foto e recusada.
-NOT_REGISTRABLE_LABELS = {"a hat or cap"}
+NOT_REGISTRABLE_LABELS = {"a hat or cap", "a necktie"}
 
 # --- Etapa 2: roupa x objeto ----------------------------------------------
 
@@ -87,11 +88,12 @@ CLOTHING_LABELS = [
     "a photo of a folded piece of clothing",
 ]
 
-# Bone e chapeu entram como objeto porque nao sao cadastraveis. Os seguintes sao
+# Bone, chapeu e gravata entram como objeto porque nao sao cadastraveis. Os seguintes sao
 # os que mais se confundem com roupa: tecido, ziper, formato de bolsa. Sem
 # eles, o modelo nao tem para onde mandar essas fotos.
 OBJECT_LABELS = [
     "a photo of a cap or hat",
+    "a photo of a necktie",
     "a photo of a cosmetic bag",
     "a photo of a makeup pouch",
     "a photo of a toiletry bag",
