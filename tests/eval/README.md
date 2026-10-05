@@ -34,6 +34,14 @@ python -m tests.eval.run_eval --runs 1   # mais rápido
 
 O resultado mostra o acerto por campo, os erros mais comuns e quantas fotos mudaram de resposta entre as rodadas. Os detalhes de cada foto ficam em `tests/eval/results/`.
 
+## Avaliação da cor
+
+Sem OpenAI e sem custo. Compara a leitura da mira (loop da câmera) com a leitura da peça (cadastro) e mede a cor secundária:
+
+```bash
+python -m tests.eval.avaliar_cor
+```
+
 ## Concordância entre rotuladores
 
 Estilo e ocasião são subjetivos. Para saber o teto realista, cada pessoa rotula num arquivo separado e compara:

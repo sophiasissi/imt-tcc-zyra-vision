@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from src.color_detection.color_mapper import map_rgb_to_color
+from src.color_detection.color_mapper import map_rgb_to_color, rgb_to_lab
 
 # Fracao da menor dimensao usada como area de leitura. Mantida proxima do
 # tamanho da mira desenhada na tela, para o app medir o que o usuario apontou.
@@ -14,6 +14,37 @@ MIN_DOMINANCE = 0.55
 # Distancia RGB abaixo da qual dois pixels sao considerados a mesma cor.
 # Cobre variacao de sombra e ruido de sensor dentro de uma peca lisa.
 SAME_COLOR_DISTANCE = 60.0
+
+# Leitura da PECA (area="peca"), usada no cadastro: a cor principal e a
+# secundaria saem da parte central da foto, nao so da mira. Numa camiseta
+# cinza com estampa vermelha no peito, a mira pode cair na estampa; a cor da
+# peca e' a que ocupa mais area. A area nao vai alem de 35% do lado menor:
+# maior que isso, o fundo da foto (cama, chao, parede) comeca a aparecer como
+# se fosse uma cor da peca.
+PIECE_CROP_RATIO = 0.35
+SECONDARY_CLUSTERS = 4
+# Fracao minima da area que a segunda cor precisa ocupar, e distancia minima
+# da cor principal. Valores conservadores de proposito: nas 39 fotos reais de
+# tests/eval, limites mais frouxos achavam no maximo 2 de 10 segundas cores e
+# inventavam uma segunda cor em ate 9 de 29 pecas de uma cor so. Para quem e'
+# daltonico, uma cor errada e' pior que nenhuma. Medir com
+# `python -m tests.eval.avaliar_cor`.
+MIN_SECONDARY_SHARE = 0.30
+MIN_SECONDARY_DISTANCE = 110.0
+# Duas cores da mesma familia (azul e azul escuro, branco e cinza) so contam
+# como cores diferentes com esta diferenca de luminosidade L*. Marinho com azul
+# claro passa; o lado sombreado de um tecido azul nao.
+MIN_SAME_FAMILY_LIGHTNESS_GAP = 35.0
+
+NEUTRAL_SYMBOLS = {"PRETO", "CINZA", "BRANCO"}
+
+
+def color_family(color_add_symbol: str) -> str:
+    """Familia ColorADD sem o tom: COLORADD_AZUL_ESCURO -> AZUL; neutros juntos."""
+    family = color_add_symbol.removeprefix("COLORADD_")
+    family = family.removesuffix("_CLARO").removesuffix("_ESCURO")
+
+    return "NEUTRO" if family in NEUTRAL_SYMBOLS else family
 
 
 def crop_center(image, crop_ratio: float = CROP_RATIO):
@@ -30,6 +61,21 @@ def crop_center(image, crop_ratio: float = CROP_RATIO):
     y2 = min(center_y + crop_size // 2, height)
 
     return image[y1:y2, x1:x2]
+
+
+def _kmeans(sample: np.ndarray, clusters: int):
+    """
+    k-means do OpenCV com semente fixa. Sem ela o ponto de partida e' sorteado
+    e a mesma foto pode dar cores diferentes a cada chamada.
+    """
+    cv2.setRNGSeed(0)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 1.0)
+
+    _, labels, centers = cv2.kmeans(
+        sample, clusters, None, criteria, 5, cv2.KMEANS_PP_CENTERS
+    )
+
+    return labels, centers
 
 
 def find_dominant_color(pixels: np.ndarray, clusters: int = CLUSTERS):
@@ -54,16 +100,7 @@ def find_dominant_color(pixels: np.ndarray, clusters: int = CLUSTERS):
     cores_distintas = len(np.unique(sample, axis=0))
     effective_clusters = max(min(clusters, cores_distintas), 1)
 
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 1.0)
-
-    _, labels, centers = cv2.kmeans(
-        sample,
-        effective_clusters,
-        None,
-        criteria,
-        5,
-        cv2.KMEANS_PP_CENTERS,
-    )
+    labels, centers = _kmeans(sample, effective_clusters)
 
     labels = labels.flatten()
     counts = np.bincount(labels, minlength=effective_clusters)
@@ -81,7 +118,79 @@ def find_dominant_color(pixels: np.ndarray, clusters: int = CLUSTERS):
     return dominant, confidence
 
 
-def detect_dominant_color(image_bytes: bytes):
+def find_secondary_color(pixels: np.ndarray, primary_rgb: list[int]):
+    """
+    Procura uma segunda cor relevante, diferente da principal.
+
+    Devolve None quando a peca e' de uma cor so. O back ainda descarta a
+    secundaria se a analise da peca disser que ela e' lisa: em foto com fundo
+    aparecendo, o fundo pode passar por segunda cor.
+    """
+    sample = pixels
+
+    if len(sample) > MAX_PIXELS:
+        indices = np.random.default_rng(0).choice(
+            len(sample), MAX_PIXELS, replace=False
+        )
+        sample = sample[indices]
+
+    sample = np.float32(sample)
+    primary = np.float32(primary_rgb)
+
+    cores_distintas = len(np.unique(sample, axis=0))
+    effective_clusters = max(min(SECONDARY_CLUSTERS, cores_distintas), 1)
+
+    labels, centers = _kmeans(sample, effective_clusters)
+
+    counts = np.bincount(labels.flatten(), minlength=effective_clusters)
+    primary_info = map_rgb_to_color(primary_rgb)
+
+    for index in np.argsort(counts)[::-1]:
+        center = centers[index]
+
+        if np.linalg.norm(center - primary) < MIN_SECONDARY_DISTANCE:
+            continue
+
+        # Como na confianca da principal: conta os pixels perto desta cor,
+        # mesmo que a sombra os tenha espalhado por outro grupo.
+        perto = np.linalg.norm(sample - center, axis=1) < SAME_COLOR_DISTANCE
+        share = float(perto.mean())
+
+        if share < MIN_SECONDARY_SHARE:
+            continue
+
+        rgb = [int(value) for value in center]
+        info = map_rgb_to_color(rgb)
+
+        if info["colorAddSymbol"] == primary_info["colorAddSymbol"]:
+            continue
+
+        same_family = color_family(info["colorAddSymbol"]) == color_family(
+            primary_info["colorAddSymbol"]
+        )
+        # L* do CIELAB: luminosidade percebida, de 0 a 100.
+        lightness_gap = abs(rgb_to_lab(rgb)[0] - rgb_to_lab(primary_rgb)[0])
+
+        if same_family and lightness_gap < MIN_SAME_FAMILY_LIGHTNESS_GAP:
+            continue
+
+        return {
+            "colorName": info["colorName"],
+            "hex": info["hex"],
+            "colorAddSymbol": info["colorAddSymbol"],
+            "rgb": rgb,
+            "share": round(share, 2),
+        }
+
+    return None
+
+
+def detect_dominant_color(image_bytes: bytes, area: str = "mira"):
+    """
+    area="mira": cor do ponto que a pessoa aponta (loop da camera). Rapido, sem
+    cor secundaria.
+    area="peca": cor principal e secundaria da peca inteira (cadastro).
+    """
     np_array = np.frombuffer(image_bytes, np.uint8)
     image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
 
@@ -89,7 +198,8 @@ def detect_dominant_color(image_bytes: bytes):
         raise ValueError("Imagem inválida")
 
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    center_crop = crop_center(image_rgb)
+    piece_crop = crop_center(image_rgb, PIECE_CROP_RATIO)
+    center_crop = piece_crop if area == "peca" else crop_center(image_rgb)
 
     pixels = center_crop.reshape((-1, 3))
 
@@ -106,5 +216,9 @@ def detect_dominant_color(image_bytes: bytes):
     # peca: a cor lida existe, mas nao representa a peca inteira.
     if confidence < MIN_DOMINANCE and not result.get("warningCode"):
         result["warningCode"] = "LOW_CONFIDENCE"
+
+    result["secondary"] = (
+        find_secondary_color(piece_crop.reshape((-1, 3)), rgb) if area == "peca" else None
+    )
 
     return result

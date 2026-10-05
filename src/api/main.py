@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 
 from src.clothing_analysis.analyze_clothing import analyze_clothing
 from src.clothing_analysis.validate_clothing import validate_clothing
@@ -30,11 +30,15 @@ def health_check():
 
 
 @app.post("/detect-color")
-def detect_color(file: UploadFile = File(...)):
+def detect_color(
+    file: UploadFile = File(...),
+    # "mira" no loop da camera; "peca" no cadastro, com a cor secundaria.
+    area: str = Query("mira", pattern="^(mira|peca)$"),
+):
     try:
         image_bytes = file.file.read()
 
-        return detect_dominant_color(image_bytes)
+        return detect_dominant_color(image_bytes, area)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
 
