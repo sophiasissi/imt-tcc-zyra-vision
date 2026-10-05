@@ -1,1 +1,40 @@
-arquivo,category,style,pattern,warmth,material,occasions
+arquivo,category,style,pattern,warmth,material,occasions,cor_real,cor_principal,cor_secundaria
+01-gravata-cinza-estampada.jpg,,,,,,,cinza,CINZA,
+02-vestido-xadrez.jpg,VESTIDO,,,,,,Preto e branco,PRETO,BRANCO
+03-gravata-vinho-estampada.jpg,,,,,,,vinho/vermelho escuro,VERMELHO_ESCURO,
+04-vestido-preto-poa.jpg,VESTIDO,,,,,,preto,PRETO,
+05-calca-listrada-azul-claro.jpg,CALCA,,,,,,ciinza,CINZA,
+06-vestido-preto-floral.jpg,VESTIDO,,,,,,Preto/detalhes vermelho,PRETO,VERMELHO
+07-vestido-verde-claro.jpg,VESTIDO,,,,,,Verde claro,VERDE_CLARO,
+11-tenis-cinza-bege.jpg,TENIS,,,,,,"Preto, marrom e branco",PRETO,CASTANHO|BRANCO
+12-moletom-azul-estampa.jpg,MOLETOM,,,,,,Azul ,AZUL,
+14-sapato-babuche-preto.jpg,SAPATO,,,,,,preto,PRETO,
+15-sapato-oxford-bege.jpg,SAPATO,,,,,,bege/marrom claro,CASTANHO_CLARO,
+16-short-vinho.jpg,SHORT,,,,,,Vinho/vermelho escuro,VERMELHO_ESCURO,
+18-sapato-sandalia-marrom.jpg,SAPATO,,,,,,Marrom escuro,CASTANHO_ESCURO,
+19-sapato-coturno-preto.jpg,SAPATO,,,,,,preto,PRETO,
+20-moletom-cardiga-bege.jpg,MOLETOM,,,,,,bege/marrom claro,CASTANHO_CLARO,
+21-short-bermuda-jeans-clara.jpg,SHORT,,,,,,Azul/jeans,AZUL,
+22-camiseta-blusinha-verde-tiedye.jpg,CAMISETA,,,,,,verde,VERDE,
+24-jaqueta-kimono-floral.jpg,JAQUETA,,,,,,Branco e verde/ detalhes vermelho,BRANCO,VERDE
+25-camisa-verde-oliva.jpg,CAMISA,,,,,,Verde escuro,VERDE_ESCURO,
+26-camisa-listrada-branca.jpg,CAMISA,,,,,,Branco e cinza,BRANCO,CINZA
+27-camiseta-roxa.jpg,CAMISETA,,,,,,roxo,ROXO,
+28-camiseta-listrada-preta-branca.jpg,CAMISETA,,,,,,Branco e azul escuro,BRANCO,AZUL_ESCURO
+29-camisa-listrada-cinza-escuro.jpg,CAMISA,,,,,,Azul escuro com listras,AZUL_ESCURO,
+31-camiseta-azul-estampa.jpg,CAMISETA,,,,,,"Verde/azul, mais para verde",VERDE|AZUL,
+32-camisa-xadrez-rosa.jpg,CAMISA,,,,,,Rosa/branco e detalhes preto e marrom,VERMELHO_CLARO,BRANCO
+33-camiseta-estampa-tropical.jpg,CAMISETA,,,,,,Verde e verde escuro,VERDE,VERDE_ESCURO
+35-camisa-floral-com-gravata-verde.jpg,CAMISA,,,,,,Branco e verde,BRANCO,VERDE
+36-tenis-preto.jpg,TENIS,,,,,,preto,PRETO,
+37-sapato-sandalia-verde.jpg,SAPATO,,,,,,verde,VERDE,
+38-moletom-cinza-estampa.jpg,MOLETOM,,,,,,Azul claro,AZUL_CLARO,
+39-sapato-social-preto.jpg,SAPATO,,,,,,preto,PRETO,
+40-sapato-scarpin-vermelho.jpg,SAPATO,,,,,,vermelho,VERMELHO,
+41-tenis-branco-laranja.jpg,TENIS,,,,,,Branco e laranja,BRANCO,LARANJA
+42-short-bermuda-jeans.jpg,SHORT,,,,,,Azul/jeans,AZUL,
+44-moletom-trico-cinza.jpg,MOLETOM,,,,,,cinza,CINZA,
+46-short-preto.jpg,SHORT,,,,,,preto,PRETO,
+47-jaqueta-corta-vento-azul.jpg,JAQUETA,,,,,,azul,AZUL,
+48-camisa-xadrez-azul.jpg,CAMISA,,,,,,Azul escuro,AZUL_ESCURO,
+51-jaqueta-verde-oliva.jpg,JAQUETA,,,,,,Verde escuro,VERDE_ESCURO,

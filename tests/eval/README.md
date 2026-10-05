@@ -16,6 +16,13 @@ calca-jeans.jpg,CALCA,CASUAL,LISO,MEDIO,JEANS,DIA_A_DIA
 
 Campo vazio não é avaliado. Em `occasions`, separe os valores com `|`.
 
+O `labels.csv` também tem a cor real de cada peça, usada para avaliar a detecção de cor:
+
+- `cor_real`: a cor como quem conhece a peça descreveria, em texto livre;
+- `cor_principal` e `cor_secundaria`: a mesma cor em código ColorADD (ex.: `VERDE_CLARO`, `AZUL_ESCURO`, `PRETO`). Quando mais de uma resposta é aceitável, separe com `|` (ex.: `VERDE|AZUL`). Rosa é `VERMELHO_CLARO`; bege é `CASTANHO_CLARO`.
+
+Edite o arquivo como CSV. Uma planilha salva como `.numbers` ou `.xlsx` não é lida pelo script.
+
 ## Como rodar
 
 Na raiz do repo, com o `.venv` ativo e o `OPENAI_API_KEY` no `.env`:

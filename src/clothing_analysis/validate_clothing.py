@@ -31,6 +31,7 @@ PERSON_STAGE_LABELS = [
     "a pair of shoes",
     "a handbag or backpack",
     "a hat or cap",
+    "a necktie",
     "a clothing item held by a person",
     "a full body photo of a person",
     "a person wearing clothes",
@@ -57,10 +58,10 @@ PERSON_STAGE_CLOTHING_LABELS = {
 # Rotulos que, quando vencem sozinhos, indicam uma foto de pessoa.
 PORTRAIT_LABELS = {"a portrait photo", "a selfie", "a person posing"}
 
-# Bone, chapeu, bolsa e mochila continuam como rotulo para o CLIP ter onde
-# encaixa-los (senao caem em "a clothing item"), mas quando vencem a foto e
-# recusada.
-NOT_REGISTRABLE_LABELS = {"a hat or cap", "a handbag or backpack"}
+# Bone, chapeu, bolsa, mochila e gravata continuam como rotulo para o CLIP ter
+# onde encaixa-los (senao caem em "a clothing item"), mas quando vencem a foto
+# e recusada.
+NOT_REGISTRABLE_LABELS = {"a hat or cap", "a handbag or backpack", "a necktie"}
 
 # --- Etapa 2: roupa x objeto ----------------------------------------------
 
@@ -85,13 +86,15 @@ CLOTHING_LABELS = [
     "a photo of a folded piece of clothing",
 ]
 
-# Bone, chapeu, bolsa e mochila entram como objeto porque nao sao cadastraveis.
-# Os seguintes sao os que mais se confundem com roupa: tecido, ziper, formato
-# de bolsa. Sem eles, o modelo nao tem para onde mandar essas fotos.
+# Bone, chapeu, bolsa, mochila e gravata entram como objeto porque nao sao
+# cadastraveis. Os seguintes sao os que mais se confundem com roupa: tecido,
+# ziper, formato de bolsa. Sem eles, o modelo nao tem para onde mandar essas
+# fotos.
 OBJECT_LABELS = [
     "a photo of a cap or hat",
     "a photo of a handbag or purse",
     "a photo of a backpack",
+    "a photo of a necktie",
     "a photo of a cosmetic bag",
     "a photo of a makeup pouch",
     "a photo of a toiletry bag",
@@ -113,11 +116,20 @@ OBJECT_LABELS = [
 CATEGORY_STAGE_LABELS = CLOTHING_LABELS + OBJECT_LABELS
 
 
+def _como_tensor(saida) -> torch.Tensor:
+    """
+    get_text_features/get_image_features devolvem o tensor direto no
+    transformers 4.x (o fixado no requirements.txt) e um objeto com
+    pooler_output no 5.x. Aceita os dois.
+    """
+    return saida if isinstance(saida, torch.Tensor) else saida.pooler_output
+
+
 def _encode_texts(labels: list[str]) -> torch.Tensor:
     inputs = processor(text=labels, return_tensors="pt", padding=True)
 
     with torch.no_grad():
-        features = model.get_text_features(**inputs).pooler_output
+        features = _como_tensor(model.get_text_features(**inputs))
 
     return features / features.norm(dim=-1, keepdim=True)
 
@@ -145,7 +157,7 @@ def validate_clothing(image_bytes: bytes):
 
     with torch.no_grad():
         pixel_values = processor(images=image, return_tensors="pt")["pixel_values"]
-        image_features = model.get_image_features(pixel_values=pixel_values).pooler_output
+        image_features = _como_tensor(model.get_image_features(pixel_values=pixel_values))
 
     image_features = image_features / image_features.norm(dim=-1, keepdim=True)
 
