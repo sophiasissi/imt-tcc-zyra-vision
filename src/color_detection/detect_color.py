@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from src.color_detection.color_mapper import map_rgb_to_color, rgb_to_lab
+from src.color_detection.color_mapper import FAMILY_BASES, map_rgb_to_color, rgb_to_lab
 
 # Fracao da menor dimensao usada como area de leitura. Mantida proxima do
 # tamanho da mira desenhada na tela, para o app medir o que o usuario apontou.
@@ -183,6 +183,97 @@ def find_secondary_color(pixels: np.ndarray, primary_rgb: list[int]):
         }
 
     return None
+
+
+# Simbolos ColorADD que a visao gera e o app sabe desenhar, sem o prefixo:
+# as 7 cores cromaticas em tres tons, mais preto, branco e tres cinzas.
+COLOR_SYMBOLS = [
+    f"{family.upper()}{tone}"
+    for family in FAMILY_BASES
+    for tone in ("", "_CLARO", "_ESCURO")
+] + ["PRETO", "BRANCO", "CINZA", "CINZA_CLARO", "CINZA_ESCURO"]
+
+# Cores de referencia fixas, usadas so quando a foto nao tem nenhum grupo de
+# pixels do simbolo pedido. Os neutros, e o amarelo claro (a base clareada
+# pela metade ainda e' lida como amarelo). Cada uma e' lida de volta como o
+# proprio simbolo; o teste fica em tests/eval/avaliar_cor.py.
+FIXED_REFERENCES = {
+    "PRETO": [25, 25, 25],
+    "BRANCO": [240, 240, 240],
+    "CINZA": [128, 128, 128],
+    "CINZA_CLARO": [190, 190, 190],
+    "CINZA_ESCURO": [82, 82, 82],
+    "AMARELO_CLARO": [250, 240, 170],
+}
+
+PIECE_CLUSTERS = 5
+
+
+def reference_rgb(symbol: str) -> list[int]:
+    """Cor de referencia de um simbolo: a base da familia clareada ou escurecida."""
+    if symbol in FIXED_REFERENCES:
+        return FIXED_REFERENCES[symbol]
+
+    family = symbol.removesuffix("_CLARO").removesuffix("_ESCURO")
+    base = FAMILY_BASES[family.capitalize()]
+
+    if symbol.endswith("_CLARO"):
+        return [round(v + (255 - v) * 0.5) for v in base]
+
+    if symbol.endswith("_ESCURO"):
+        return [round(v * 0.55) for v in base]
+
+    return base
+
+
+def symbol_name(symbol: str) -> str:
+    """AZUL_ESCURO -> 'Azul Escuro', no mesmo formato do colorName."""
+    return " ".join(part.capitalize() for part in symbol.split("_"))
+
+
+def color_from_symbol(image_bytes: bytes, symbol: str):
+    """
+    Monta a cor completa (nome, hex e simbolo) a partir de um simbolo ColorADD
+    sem prefixo, como o que a analise da peca devolve para a cor secundaria.
+
+    O hex vem da propria foto: o grupo de pixels da peca com exatamente esse
+    simbolo. Sem ele, usa a cor de referencia do simbolo. Um grupo so da mesma
+    familia nao serve: daria, por exemplo, um azul claro para "azul escuro".
+    """
+    full_symbol = f"COLORADD_{symbol}"
+    image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+
+    rgb = None
+
+    if image is not None:
+        piece = crop_center(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), PIECE_CROP_RATIO)
+        sample = np.float32(piece.reshape((-1, 3)))
+
+        if len(sample) > MAX_PIXELS:
+            indices = np.random.default_rng(0).choice(len(sample), MAX_PIXELS, replace=False)
+            sample = sample[indices]
+
+        clusters = max(min(PIECE_CLUSTERS, len(np.unique(sample, axis=0))), 1)
+        labels, centers = _kmeans(sample, clusters)
+        counts = np.bincount(labels.flatten(), minlength=clusters)
+
+        same_symbol = [
+            ([int(v) for v in centers[i]], counts[i])
+            for i in range(clusters)
+            if map_rgb_to_color([int(v) for v in centers[i]])["colorAddSymbol"] == full_symbol
+        ]
+
+        if same_symbol:
+            rgb = max(same_symbol, key=lambda c: c[1])[0]
+
+    if rgb is None:
+        rgb = reference_rgb(symbol)
+
+    return {
+        "colorName": symbol_name(symbol),
+        "hex": "#{:02X}{:02X}{:02X}".format(*rgb),
+        "colorAddSymbol": full_symbol,
+    }
 
 
 def detect_dominant_color(image_bytes: bytes, area: str = "mira"):

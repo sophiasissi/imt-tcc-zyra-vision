@@ -40,6 +40,7 @@ Sem OpenAI e sem custo. Compara a leitura da mira (loop da câmera) com a leitur
 
 ```bash
 python -m tests.eval.avaliar_cor
+python -m tests.eval.avaliar_cor --ia   # inclui a cor secundária da análise da IA (paga, uma chamada por foto)
 ```
 
 ## Concordância entre rotuladores

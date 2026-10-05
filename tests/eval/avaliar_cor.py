@@ -10,13 +10,24 @@ Para a cor principal, conta acerto exato (familia e tom) e de familia. Para a
 secundaria, so nas fotos com gabarito de secundaria conta acerto; nas fotos sem
 segunda cor no gabarito, conta falso positivo quando a leitura inventa uma.
 
-    python -m tests.eval.avaliar_cor
+    python -m tests.eval.avaliar_cor        # so a leitura de pixels, sem custo
+    python -m tests.eval.avaliar_cor --ia   # tambem a analise da IA (paga)
+
+Com --ia, mede a cor secundaria que a analise da peca devolve (a que o
+cadastro usa) e, de brinde, o acerto de categoria: uma chamada por foto.
 """
 
 import csv
+import sys
 from pathlib import Path
 
-from src.color_detection.detect_color import color_family, detect_dominant_color
+from src.color_detection.detect_color import (
+    COLOR_SYMBOLS,
+    color_family,
+    detect_dominant_color,
+    map_rgb_to_color,
+    reference_rgb,
+)
 
 EVAL_DIR = Path(__file__).parent
 
@@ -27,6 +38,14 @@ def aceitos(valor: str) -> set[str]:
 
 
 def main():
+    # A cor de referencia de cada simbolo precisa ser lida como ele mesmo; senao
+    # uma cor secundaria sem pixels na foto ganharia um hex de outra cor.
+    erradas = [
+        s for s in COLOR_SYMBOLS
+        if map_rgb_to_color(reference_rgb(s))["colorAddSymbol"] != f"COLORADD_{s}"
+    ]
+    print(f"Cores de referencia lidas como outro simbolo: {erradas or 'nenhuma'}\n")
+
     with open(EVAL_DIR / "labels.csv", encoding="utf-8") as arquivo:
         linhas = [l for l in csv.DictReader(arquivo) if l["cor_principal"].strip()]
 
@@ -79,6 +98,57 @@ def main():
     if erros:
         print("\nDivergencias na leitura da peca:")
         print("\n".join(erros))
+
+    if "--ia" in sys.argv:
+        avaliar_ia(linhas)
+
+
+def avaliar_ia(linhas):
+    # Importado aqui: so carrega o cliente da OpenAI quando a avaliacao paga
+    # foi pedida.
+    from src.clothing_analysis.analyze_clothing import analyze_clothing
+
+    esperadas = acertos = acertos_familia = sem_gabarito = falsas = 0
+    cat_total = cat_acertos = 0
+    relatorio = []
+
+    for linha in linhas:
+        resultado = analyze_clothing((EVAL_DIR / "images" / linha["arquivo"]).read_bytes())
+        cor = resultado["secondaryColor"]
+        sec = cor["colorAddSymbol"] if cor else None
+        secundaria = aceitos(linha["cor_secundaria"])
+
+        if secundaria:
+            esperadas += 1
+            acertos += sec in secundaria
+            familias = {color_family(c) for c in secundaria}
+            acertos_familia += bool(sec) and color_family(sec) in familias
+        else:
+            sem_gabarito += 1
+            falsas += sec is not None
+
+        if linha["category"]:
+            cat_total += 1
+            cat_acertos += resultado["category"] == linha["category"]
+
+        relatorio.append(
+            f"  {linha['arquivo']:42} gabarito {linha['category'] or '-'}"
+            f" + {linha['cor_secundaria'] or '-'} | IA {resultado['category']}"
+            f" {resultado['pattern']} + {sec.removeprefix('COLORADD_') if sec else '-'}"
+        )
+
+    print("\nCor secundaria (analise da IA)")
+    print(
+        f"  acertou a segunda cor: {pct(acertos, esperadas)}"
+        f" (familia: {pct(acertos_familia, esperadas)})"
+    )
+    print(f"  inventou segunda cor em peca de uma cor so: {pct(falsas, sem_gabarito)}")
+    print(f"\nCategoria (analise da IA): {pct(cat_acertos, cat_total)}")
+    print("\n".join(relatorio))
+
+
+def pct(n, d):
+    return f"{n}/{d} ({100 * n / d:.0f}%)" if d else "-"
 
 
 if __name__ == "__main__":

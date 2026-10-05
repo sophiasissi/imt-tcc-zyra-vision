@@ -2,8 +2,8 @@ arquivo,category,style,pattern,warmth,material,occasions,cor_real,cor_principal,
 01-gravata-cinza-estampada.jpg,,,,,,,cinza,CINZA,
 02-vestido-xadrez.jpg,VESTIDO,,,,,,Preto e branco,PRETO,BRANCO
 03-gravata-vinho-estampada.jpg,,,,,,,vinho/vermelho escuro,VERMELHO_ESCURO,
-04-vestido-preto-poa.jpg,VESTIDO,,,,,,preto,PRETO,
-05-calca-listrada-azul-claro.jpg,CALCA,,,,,,ciinza,CINZA,
+04-vestido-preto-poa.jpg,VESTIDO,,,,,,preto,PRETO,BRANCO
+05-calca-listrada-azul-claro.jpg,CALCA,,,,,,ciinza,CINZA,BRANCO
 06-vestido-preto-floral.jpg,VESTIDO,,,,,,Preto/detalhes vermelho,PRETO,VERMELHO
 07-vestido-verde-claro.jpg,VESTIDO,,,,,,Verde claro,VERDE_CLARO,
 11-tenis-cinza-bege.jpg,TENIS,,,,,,"Preto, marrom e branco",PRETO,CASTANHO|BRANCO
@@ -21,7 +21,7 @@ arquivo,category,style,pattern,warmth,material,occasions,cor_real,cor_principal,
 26-camisa-listrada-branca.jpg,CAMISA,,,,,,Branco e cinza,BRANCO,CINZA
 27-camiseta-roxa.jpg,CAMISETA,,,,,,roxo,ROXO,
 28-camiseta-listrada-preta-branca.jpg,CAMISETA,,,,,,Branco e azul escuro,BRANCO,AZUL_ESCURO
-29-camisa-listrada-cinza-escuro.jpg,CAMISA,,,,,,Azul escuro com listras,AZUL_ESCURO,
+29-camisa-listrada-cinza-escuro.jpg,CAMISA,,,,,,Azul escuro com listras,AZUL_ESCURO,BRANCO
 31-camiseta-azul-estampa.jpg,CAMISETA,,,,,,"Verde/azul, mais para verde",VERDE|AZUL,
 32-camisa-xadrez-rosa.jpg,CAMISA,,,,,,Rosa/branco e detalhes preto e marrom,VERMELHO_CLARO,BRANCO
 33-camiseta-estampa-tropical.jpg,CAMISETA,,,,,,Verde e verde escuro,VERDE,VERDE_ESCURO
@@ -36,5 +36,5 @@ arquivo,category,style,pattern,warmth,material,occasions,cor_real,cor_principal,
 44-moletom-trico-cinza.jpg,MOLETOM,,,,,,cinza,CINZA,
 46-short-preto.jpg,SHORT,,,,,,preto,PRETO,
 47-jaqueta-corta-vento-azul.jpg,JAQUETA,,,,,,azul,AZUL,
-48-camisa-xadrez-azul.jpg,CAMISA,,,,,,Azul escuro,AZUL_ESCURO,
+48-camisa-xadrez-azul.jpg,CAMISA,,,,,,Azul escuro,AZUL_ESCURO,BRANCO
 51-jaqueta-verde-oliva.jpg,JAQUETA,,,,,,Verde escuro,VERDE_ESCURO,

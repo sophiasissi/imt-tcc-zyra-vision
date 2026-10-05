@@ -7,6 +7,11 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from PIL import Image, UnidentifiedImageError
 
+from src.color_detection.detect_color import (
+    COLOR_SYMBOLS,
+    color_from_symbol,
+    symbol_name,
+)
 from src.clothing_analysis.taxonomy import (
     CATEGORIES,
     MATERIALS,
@@ -67,6 +72,10 @@ def reduzir_imagem(image_bytes: bytes, max_lado: int = MAX_LADO) -> bytes:
 
     return buffer.getvalue()
 
+# Cores que a analise pode devolver como cor secundaria: os simbolos ColorADD
+# que o app desenha. Rosa e' vermelho claro; bege e marrom sao castanho.
+SECONDARY_COLORS = {symbol: symbol_name(symbol) for symbol in COLOR_SYMBOLS}
+
 SYSTEM_PROMPT = f"""
 Você é um analisador de roupas para um aplicativo de moda acessível.
 A imagem já foi validada como uma peça de roupa.
@@ -79,7 +88,8 @@ Analise a imagem e responda SOMENTE JSON com:
   "pattern": string | null,
   "warmth": string | null,
   "material": string | null,
-  "occasions": string[]
+  "occasions": string[],
+  "secondary_color": string | null
 }}
 
 Regras:
@@ -97,6 +107,12 @@ Regras:
 {describe(WARMTH)}
 - material: só se for claramente um destes; qualquer outro material é null:
 {describe(MATERIALS)}
+- secondary_color: a segunda cor da peça, só quando ela tem duas cores bem
+  visíveis (listras, xadrez, estampa, recortes de cor) e a segunda ocupa uma
+  parte relevante da peça. Peça de uma cor só, ou com detalhe pequeno (costura,
+  botão, logo pequeno, etiqueta), é null. Ignore o fundo da foto. Rosa é
+  VERMELHO_CLARO; bege e marrom são CASTANHO (com _CLARO ou _ESCURO). Códigos:
+{describe(SECONDARY_COLORS)}
 """
 
 
@@ -153,11 +169,20 @@ def analyze_clothing(image_bytes: bytes):
         if value and value not in normalized_occasions:
             normalized_occasions.append(value)
 
+    pattern = normalize_value(data.get("pattern"), PATTERNS)
+    secondary = normalize_value(data.get("secondary_color"), SECONDARY_COLORS)
+
     return {
         "category": normalize_value(data.get("category"), CATEGORIES),
         "style": normalize_value(data.get("style"), STYLES),
-        "pattern": normalize_value(data.get("pattern"), PATTERNS),
+        "pattern": pattern,
         "warmth": normalize_value(data.get("warmth"), WARMTH),
         "material": normalize_value(data.get("material"), MATERIALS),
         "occasions": normalized_occasions,
+        # Peca lisa nao tem segunda cor, mesmo que a IA aponte uma.
+        "secondaryColor": (
+            color_from_symbol(image_bytes, secondary)
+            if secondary and pattern != "LISO"
+            else None
+        ),
     }
