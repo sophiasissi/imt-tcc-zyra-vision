@@ -14,8 +14,8 @@ model.eval()
 #      inteiro)? Essa etapa ja funcionava bem e continua igual.
 #   2. ROUPA x OBJETO: a foto e de uma peca ou de um objeto qualquer?
 #
-# So passa o que pode ser cadastrado (as categorias de taxonomy.py). Bone e
-# chapeu ficam de fora: nao entram em looks.
+# So passa o que pode ser cadastrado (as categorias de taxonomy.py). Bone,
+# chapeu, bolsa e mochila ficam de fora: nao entram no armario.
 #
 # A segunda etapa existia como um rotulo generico "a clothing item" contra um
 # unico "an everyday object". Qualquer coisa de tecido ou com ziper -- uma
@@ -52,16 +52,16 @@ PERSON_LABELS = {
 PERSON_STAGE_CLOTHING_LABELS = {
     "a clothing item",
     "a pair of shoes",
-    "a handbag or backpack",
     "a clothing item held by a person",
 }
 
 # Rotulos que, quando vencem sozinhos, indicam uma foto de pessoa.
 PORTRAIT_LABELS = {"a portrait photo", "a selfie", "a person posing"}
 
-# Bone, chapeu e gravata continuam como rotulo para o CLIP ter onde encaixa-los (senao
-# caem em "a clothing item"), mas quando vencem a foto e recusada.
-NOT_REGISTRABLE_LABELS = {"a hat or cap", "a necktie"}
+# Bone, chapeu, bolsa, mochila e gravata continuam como rotulo para o CLIP ter
+# onde encaixa-los (senao caem em "a clothing item"), mas quando vencem a foto
+# e recusada.
+NOT_REGISTRABLE_LABELS = {"a hat or cap", "a handbag or backpack", "a necktie"}
 
 # --- Etapa 2: roupa x objeto ----------------------------------------------
 
@@ -82,17 +82,18 @@ CLOTHING_LABELS = [
     "a photo of boots",
     "a photo of sandals",
     "a photo of a scarf",
-    "a photo of a handbag or purse",
-    "a photo of a backpack",
     "a photo of a clothing item on a hanger",
     "a photo of a folded piece of clothing",
 ]
 
-# Bone, chapeu e gravata entram como objeto porque nao sao cadastraveis. Os seguintes sao
-# os que mais se confundem com roupa: tecido, ziper, formato de bolsa. Sem
-# eles, o modelo nao tem para onde mandar essas fotos.
+# Bone, chapeu, bolsa, mochila e gravata entram como objeto porque nao sao
+# cadastraveis. Os seguintes sao os que mais se confundem com roupa: tecido,
+# ziper, formato de bolsa. Sem eles, o modelo nao tem para onde mandar essas
+# fotos.
 OBJECT_LABELS = [
     "a photo of a cap or hat",
+    "a photo of a handbag or purse",
+    "a photo of a backpack",
     "a photo of a necktie",
     "a photo of a cosmetic bag",
     "a photo of a makeup pouch",

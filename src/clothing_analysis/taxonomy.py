@@ -16,7 +16,6 @@ CATEGORIES = {
     "VESTIDO": "vestido, macacao",
     "TENIS": "tenis",
     "SAPATO": "sapato, sandalia, bota, chinelo, salto",
-    "BOLSA": "bolsa, mochila",
 }
 
 STYLES = {
