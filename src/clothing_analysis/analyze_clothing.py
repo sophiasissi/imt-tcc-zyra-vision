@@ -21,7 +21,7 @@ from src.clothing_analysis.taxonomy import (
 load_dotenv()
 
 # Modelo configuravel por ambiente, para trocar sem mexer no codigo.
-MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
 
 # A foto do celular chega com resolucao cheia. Para reconhecer a peca isso e'
 # desperdicio: o custo da chamada cresce com o tamanho da imagem, e 512px de
