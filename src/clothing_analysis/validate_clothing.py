@@ -113,11 +113,20 @@ OBJECT_LABELS = [
 CATEGORY_STAGE_LABELS = CLOTHING_LABELS + OBJECT_LABELS
 
 
+def _como_tensor(saida) -> torch.Tensor:
+    """
+    get_text_features/get_image_features devolvem o tensor direto no
+    transformers 4.x (o fixado no requirements.txt) e um objeto com
+    pooler_output no 5.x. Aceita os dois.
+    """
+    return saida if isinstance(saida, torch.Tensor) else saida.pooler_output
+
+
 def _encode_texts(labels: list[str]) -> torch.Tensor:
     inputs = processor(text=labels, return_tensors="pt", padding=True)
 
     with torch.no_grad():
-        features = model.get_text_features(**inputs).pooler_output
+        features = _como_tensor(model.get_text_features(**inputs))
 
     return features / features.norm(dim=-1, keepdim=True)
 
@@ -145,7 +154,7 @@ def validate_clothing(image_bytes: bytes):
 
     with torch.no_grad():
         pixel_values = processor(images=image, return_tensors="pt")["pixel_values"]
-        image_features = model.get_image_features(pixel_values=pixel_values).pooler_output
+        image_features = _como_tensor(model.get_image_features(pixel_values=pixel_values))
 
     image_features = image_features / image_features.norm(dim=-1, keepdim=True)
 
