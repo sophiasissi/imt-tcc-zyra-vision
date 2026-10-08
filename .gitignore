@@ -217,6 +217,3 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 tests/eval/results/
-
-# Contexto local do Claude Code (cada pessoa mantem o seu)
-CLAUDE.md
