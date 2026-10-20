@@ -26,6 +26,12 @@ def open_srgb(image_bytes: bytes) -> Image.Image:
     icc = image.info.get("icc_profile")
 
     try:
+        # Peca sem fundo (/remove-background): o fundo transparente vira branco.
+        # Sem isso, o convert("RGB") devolveria o que estava por baixo da
+        # transparencia (o fundo original ou preto) para a analise e a cor.
+        if image.mode in ("RGBA", "LA") or "transparency" in image.info:
+            fundo = Image.new("RGBA", image.size, (255, 255, 255, 255))
+            image = Image.alpha_composite(fundo, image.convert("RGBA"))
         image = image.convert("RGB")
     except OSError:
         # Arquivo truncado: o cabecalho abre, mas os pixels nao.

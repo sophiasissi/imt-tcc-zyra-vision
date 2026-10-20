@@ -1,6 +1,8 @@
 import logging
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Response, UploadFile
+
+from src.background_removal.remove_background import remove_background
 
 from src.clothing_analysis.analyze_clothing import analyze_clothing
 from src.clothing_analysis.validate_clothing import validate_clothing
@@ -72,3 +74,21 @@ def analyze_clothing_endpoint(file: UploadFile = File(...)):
             status_code=503,
             detail="Nao foi possivel analisar a peca agora.",
         )
+
+
+@app.post("/remove-background")
+def remove_background_endpoint(file: UploadFile = File(...)):
+    """
+    Devolve a peca sem fundo (image/webp com transparencia), recortada no
+    tamanho dela. Os pixels da peca nao mudam: so' o fundo sai.
+
+    422 quando o modelo nao acha a peca: quem chama mantem a foto original.
+    """
+    image_bytes = file.file.read()
+
+    try:
+        return Response(content=remove_background(image_bytes), media_type="image/webp")
+    except ValueError as error:
+        status = 400 if str(error) == "Imagem inválida" else 422
+        raise HTTPException(status_code=status, detail=str(error))
+
