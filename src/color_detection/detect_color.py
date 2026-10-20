@@ -82,10 +82,15 @@ def find_dominant_color(pixels: np.ndarray, clusters: int = CLUSTERS):
     return dominant, confidence
 
 
-def detect_dominant_color(image_bytes: bytes):
+def detect_dominant_color(image_bytes: bytes, ja_recortada: bool = False):
+    """
+    ja_recortada: a imagem ja e' so' a area da mira (o app recorta antes de
+    enviar, para nao mandar a foto inteira pela rede a cada 0,8 s). Sem isso,
+    o recorte central e' feito aqui.
+    """
     # Ja em sRGB: a foto do iPhone vem em Display P3 (ver src/image_io.py).
     image_rgb = np.asarray(open_srgb(image_bytes))
-    center_crop = crop_center(image_rgb)
+    center_crop = image_rgb if ja_recortada else crop_center(image_rgb)
 
     pixels = center_crop.reshape((-1, 3))
 
