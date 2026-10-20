@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 from src.color_detection.color_mapper import map_rgb_to_color
+from src.image_io import open_srgb
 
 # Fracao da menor dimensao usada como area de leitura. Mantida proxima do
 # tamanho da mira desenhada na tela, para o app medir o que o usuario apontou.
@@ -82,13 +83,8 @@ def find_dominant_color(pixels: np.ndarray, clusters: int = CLUSTERS):
 
 
 def detect_dominant_color(image_bytes: bytes):
-    np_array = np.frombuffer(image_bytes, np.uint8)
-    image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-
-    if image is None:
-        raise ValueError("Imagem inválida")
-
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # Ja em sRGB: a foto do iPhone vem em Display P3 (ver src/image_io.py).
+    image_rgb = np.asarray(open_srgb(image_bytes))
     center_crop = crop_center(image_rgb)
 
     pixels = center_crop.reshape((-1, 3))
