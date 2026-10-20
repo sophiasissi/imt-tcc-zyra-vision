@@ -19,7 +19,7 @@ Campo vazio não é avaliado. Em `occasions`, separe os valores com `|`.
 O `labels.csv` também tem a cor real de cada peça, usada para avaliar a detecção de cor:
 
 - `cor_real`: a cor como quem conhece a peça descreveria, em texto livre;
-- `cor_principal` e `cor_secundaria`: a mesma cor em código ColorADD (ex.: `VERDE_CLARO`, `AZUL_ESCURO`, `PRETO`). Quando mais de uma resposta é aceitável, separe com `|` (ex.: `VERDE|AZUL`). Rosa é `VERMELHO_CLARO`; bege é `CASTANHO_CLARO`.
+- `cor_principal` e `cor_secundaria`: a mesma cor em código ColorADD (ex.: `VERDE_CLARO`, `AZUL_ESCURO`, `PRETO`). Quando mais de uma resposta é aceitável, separe com `|` (ex.: `VERDE|AZUL`). Use só os 27 símbolos oficiais do ColorADD: rosa bebê e salmão são `VERMELHO_CLARO`; pink e rosa arroxeado são `ROXO_CLARO`; bege é `CASTANHO_CLARO`; cinza é `CINZA_CLARO` ou `CINZA_ESCURO` (não existe cinza médio).
 
 Edite o arquivo como CSV. Uma planilha salva como `.numbers` ou `.xlsx` não é lida pelo script.
 
