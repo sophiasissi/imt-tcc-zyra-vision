@@ -93,6 +93,7 @@ CLOTHING_LABELS = [
     "a photo of shoes",
     "a photo of boots",
     "a photo of sandals",
+    "a photo of flip-flops or slides",
     "a photo of a scarf",
     "a photo of a clothing item on a hanger",
     "a photo of a folded piece of clothing",
@@ -126,6 +127,58 @@ OBJECT_LABELS = [
 ]
 
 CATEGORY_STAGE_LABELS = CLOTHING_LABELS + OBJECT_LABELS
+
+# Tipo da peca para a recomendacao da tela da peca capturada (antes do
+# cadastro, que e' quando a analise paga diz a categoria). Jaqueta e blazer
+# ficam junto com a parte de cima: o CLIP confunde camisa xadrez com jaqueta,
+# e para a recomendacao os dois sao "de cima" (nao se sugere uma camisa para
+# quem fotografou outra camisa, nem uma jaqueta).
+TIPO_DO_ROTULO = {
+    "a photo of a t-shirt": "CIMA",
+    "a photo of a shirt": "CIMA",
+    "a photo of a blouse": "CIMA",
+    "a photo of a sweater": "CIMA",
+    "a photo of a hoodie": "CIMA",
+    "a photo of a jacket or coat": "CIMA",
+    "a photo of a blazer": "CIMA",
+    "a photo of a bodysuit": "CIMA",
+    "a photo of a crop top": "CIMA",
+    "a photo of a tank top": "CIMA",
+    "a photo of a tube top": "CIMA",
+    "a photo of a long sleeve top": "CIMA",
+    "a photo of a dress": "VESTIDO",
+    "a photo of a skirt": "BAIXO",
+    "a photo of pants or jeans": "BAIXO",
+    "a photo of pajama pants": "BAIXO",
+    "a photo of fleece pants": "BAIXO",
+    "a photo of sweatpants": "BAIXO",
+    "a photo of leggings": "BAIXO",
+    "a photo of shorts": "BAIXO",
+    "a photo of sneakers": "CALCADO",
+    "a photo of shoes": "CALCADO",
+    "a photo of boots": "CALCADO",
+    "a photo of sandals": "CALCADO",
+    "a photo of flip-flops or slides": "CALCADO",
+}
+
+# Parcela minima do tipo mais provavel entre os tipos. Nas 37 fotos rotuladas
+# de tests/eval (20/10/2026), com 0,7 o tipo saiu em 32 e acertou as 32; sem
+# corte, acertava 86%. Abaixo disso o tipo vem null e o app nao recomenda.
+CERTEZA_MINIMA_DO_TIPO = 0.7
+
+
+def _tipo_da_peca(category_stage: dict[str, float]):
+    soma: dict[str, float] = {}
+    for rotulo, tipo in TIPO_DO_ROTULO.items():
+        soma[tipo] = soma.get(tipo, 0.0) + category_stage[rotulo]
+
+    total = sum(soma.values())
+    melhor = max(soma, key=soma.get)
+
+    if total <= 0 or soma[melhor] / total < CERTEZA_MINIMA_DO_TIPO:
+        return None
+
+    return melhor
 
 
 def _como_tensor(saida) -> torch.Tensor:
@@ -210,6 +263,7 @@ def validate_clothing(image_bytes: bytes):
             "isClothing": True,
             "confidence": round(clothing_score, 2),
             "reason": None,
+            "tipo": _tipo_da_peca(category_stage),
         }
 
     return {
