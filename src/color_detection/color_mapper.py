@@ -18,8 +18,9 @@ import numpy as np
 # virar cinza, e marrom escuro deixou de virar cinza escuro.
 #
 # O ColorADD e' construido sobre azul, amarelo e vermelho, com preto e branco
-# marcando escuro e claro. Nao ha simbolo proprio de rosa: rosa e' vermelho
-# claro.
+# marcando escuro e claro. O codigo oficial tem 27 simbolos, e o manual de
+# normas graficas (item 2.4) proibe criar ou alterar simbolos: toda cor tem
+# que cair num deles. Nao ha rosa nem cinza medio (ver ROSA_* e gray_tone).
 # ---------------------------------------------------------------------------
 _W2C_NOMES = np.load(os.path.join(os.path.dirname(__file__), "data", "w2c_nomes.npy"))
 
@@ -41,12 +42,21 @@ FAMILY_BASES = {
 
 TONE_DELTA = 12.0
 
-# Faixas de L* para o tom do cinza. Preto e branco vem da tabela de nomes.
-# As fronteiras com eles sao ambiguas por natureza: sem referencia de branco
-# na cena, uma camisa branca com pouca luz e uma cinza clara com luz forte
-# geram o mesmo pixel. Por isso o aviso de iluminacao importa tanto aqui.
-CINZA_ESCURO_MAX_LIGHTNESS = 38.0
-CINZA_CLARO_MIN_LIGHTNESS = 62.0
+# O ColorADD so' tem cinza claro e cinza escuro. Na faixa de cinzas do
+# manual (4.1, "Procedimento de Referenciacao de Cores"), o meio da escala
+# separa os dois: acima de 50% de luz e' cinza claro, abaixo e' cinza escuro.
+# Preto e branco vem da tabela de nomes. As fronteiras com eles sao ambiguas
+# por natureza: sem referencia de branco na cena, uma camisa branca com pouca
+# luz e uma cinza clara com luz forte geram o mesmo pixel. Por isso o aviso de
+# iluminacao importa tanto aqui.
+CINZA_DIVISAO_LIGHTNESS = 50.0
+
+# O rosa tambem nao tem simbolo: o manual o divide entre vermelho claro e
+# roxo claro (a barra oficial do roxo claro e' rosa-pink). Vale o matiz mais
+# proximo das barras oficiais dos dois, as mesmas da tela do ColorADD no app:
+# rosa bebe e salmao puxam para o vermelho; pink e rosa choque, para o roxo.
+ROSA_VERMELHO_CLARO_HUE = 17.0  # barra #FFB8BC
+ROSA_ROXO_CLARO_HUE = 349.0  # barra #EF6EB0
 
 # Um pastel e' a versao "lavada" da cor: mesma familia, croma bem menor.
 # Necessario porque o amarelo ja' nasce quase no teto de L*, entao o
@@ -97,13 +107,22 @@ def match_family(rgb: list[int]) -> str:
 
 
 def gray_tone(lightness: float):
-    if lightness < CINZA_ESCURO_MAX_LIGHTNESS:
+    if lightness < CINZA_DIVISAO_LIGHTNESS:
         return {"colorName": "Cinza Escuro", "colorAddSymbol": "COLORADD_CINZA_ESCURO"}
 
-    if lightness > CINZA_CLARO_MIN_LIGHTNESS:
-        return {"colorName": "Cinza Claro", "colorAddSymbol": "COLORADD_CINZA_CLARO"}
+    return {"colorName": "Cinza Claro", "colorAddSymbol": "COLORADD_CINZA_CLARO"}
 
-    return {"colorName": "Cinza", "colorAddSymbol": "COLORADD_CINZA"}
+
+def _hue_distance(a: float, b: float) -> float:
+    diff = abs(a - b) % 360
+    return min(diff, 360 - diff)
+
+
+def pink_tone(hue: float):
+    if _hue_distance(hue, ROSA_ROXO_CLARO_HUE) < _hue_distance(hue, ROSA_VERMELHO_CLARO_HUE):
+        return {"colorName": "Roxo Claro", "colorAddSymbol": "COLORADD_ROXO_CLARO"}
+
+    return {"colorName": "Vermelho Claro", "colorAddSymbol": "COLORADD_VERMELHO_CLARO"}
 
 
 def apply_tone(
@@ -163,7 +182,7 @@ def detect_lighting_warning_code(rgb: list[int]):
 
 def map_rgb_to_color(rgb: list[int]):
     warning_code = detect_lighting_warning_code(rgb)
-    lightness, chroma, _ = rgb_to_lch(rgb)
+    lightness, chroma, hue = rgb_to_lch(rgb)
 
     family = match_family(rgb)
 
@@ -172,7 +191,7 @@ def map_rgb_to_color(rgb: list[int]):
     elif family == "Cinza":
         result = gray_tone(lightness)
     elif family == "Rosa":
-        result = {"colorName": "Vermelho Claro", "colorAddSymbol": "COLORADD_VERMELHO_CLARO"}
+        result = pink_tone(hue)
     else:
         result = apply_tone(
             family,
