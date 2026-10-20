@@ -1,8 +1,7 @@
-import io
-
 import torch
-from PIL import Image, UnidentifiedImageError
 from transformers import CLIPModel, CLIPProcessor
+
+from src.image_io import open_srgb
 
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
@@ -16,6 +15,10 @@ model.eval()
 #
 # So passa o que pode ser cadastrado (as categorias de taxonomy.py). Bone,
 # chapeu, bolsa e mochila ficam de fora: nao entram no armario.
+#
+# Calca de pijama de pelucia, body, cropped, top e blusa fina de manga longa
+# ganharam rotulo proprio em 19/10/2026: a calca de pijama de soft caia em
+# "a photo of a blanket" e era recusada.
 #
 # A segunda etapa existia como um rotulo generico "a clothing item" contra um
 # unico "an everyday object". Qualquer coisa de tecido ou com ziper -- uma
@@ -76,6 +79,15 @@ CLOTHING_LABELS = [
     "a photo of a dress",
     "a photo of a skirt",
     "a photo of pants or jeans",
+    "a photo of pajama pants",
+    "a photo of fleece pants",
+    "a photo of sweatpants",
+    "a photo of leggings",
+    "a photo of a bodysuit",
+    "a photo of a crop top",
+    "a photo of a tank top",
+    "a photo of a tube top",
+    "a photo of a long sleeve top",
     "a photo of shorts",
     "a photo of sneakers",
     "a photo of shoes",
@@ -150,10 +162,7 @@ def _scores(image_features: torch.Tensor, text_features: torch.Tensor, labels: l
 
 
 def validate_clothing(image_bytes: bytes):
-    try:
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    except UnidentifiedImageError:
-        raise ValueError("Imagem inválida")
+    image = open_srgb(image_bytes)
 
     with torch.no_grad():
         pixel_values = processor(images=image, return_tensors="pt")["pixel_values"]
