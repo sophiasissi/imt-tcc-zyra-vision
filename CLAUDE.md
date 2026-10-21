@@ -213,6 +213,21 @@ O conflito entre `feature/validate-clothing` e a `dev` foi resolvido no PR #6 (2
 
 **Testes no celular (armário real do Gustavo, 38 peças):** a câmera erra cor com luz amarela de casa (azul-marinho → cinza, cinza → castanho claro). Ficou para depois: testar com outra luz.
 
+## Estado em 07/10/2026 (fim do dia)
+
+**Na `dev` do back:** looks salvos (PR #24): `POST/GET /looks`, `DELETE /looks/:id`. Apagar uma peça apaga os looks que a usam; cada peça devolvida por `/pecas` traz `totalLooks`, para o app avisar antes (um popup só, mesmo com várias peças selecionadas). Apagar um look não apaga peças.
+
+**PRs `feature/verificar-email` (back e app), aprovadas, aguardando merge:**
+- back: `POST /auth/verificar-email` → `{ disponivel }`, com limite de 10 consultas por minuto por IP (`@nestjs/throttler`);
+- app: popup "Este email já está cadastrado" com **Entrar** e **Voltar**; do cadastro para o login, a pilha vira Intro → Login;
+- app: o `AuthLayout` anima o teclado como o chat, rola até o campo focado, só rola quando não cabe, e tem `rolavel={false}` para as telas de boas-vindas; telas de cadastro centralizadas.
+
+**Pronto, mas sem commit (no `git stash` do back e do app, branch `feature/chat-clima-perguntas`):** perguntas no chat e clima automático.
+- No fim de cada look, uma pergunta: ocasião → clima (só sem previsão) → "Quer salvar esse look?". "Sim" ou "salva esse look" salva sem chamar a IA (`src/looks/conversa.ts`).
+- O app manda a localização arredondada (`expo-location`); o back consulta a previsão no Open-Meteo (`src/looks/clima.ts`, sem chave). O dia do evento ("amanhã", "sábado", "dia 20") sai de `src/looks/dia-do-evento.ts`.
+- O dia e o "salvar" ficaram em código porque, no prompt, derrubaram a validação do interpretador de 88% para 84%.
+- Para retomar: trocar para `feature/chat-clima-perguntas` nos dois repositórios e rodar `git stash pop`. Falta testar no celular. Observado no teste: a IA quase sempre põe "dia a dia" como ocasião, então a pergunta da ocasião raramente aparece; a chuva ainda não muda o look.
+
 ## Próximos passos
 
 1. **Regras de looks controladas pelo Gustavo** (combinado em 05/10). As regras saem do código do motor e vão para um arquivo de regras por cenário (YAML), que ele edita:

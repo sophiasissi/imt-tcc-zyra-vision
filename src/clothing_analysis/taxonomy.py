@@ -32,7 +32,11 @@ CATEGORIES = {
     "SAIA": "saia de qualquer comprimento",
     "VESTIDO": "vestido, macacao (vestido tem saia; o body e' fechado entre as pernas)",
     "TENIS": "tenis",
-    "SAPATO": "sapato, sandalia, bota, chinelo, salto",
+    # Calcados abertos separados do sapato (20/10/2026): chinelo saia como
+    # sapato e entrava em look de festa e de trabalho.
+    "SAPATO": "calcado fechado: sapato social, bota, sapatilha, mocassim, scarpin, oxford",
+    "SANDALIA": "sandalia aberta com tiras: rasteira, sandalia de salto, papete, anabela aberta",
+    "CHINELO": "chinelo de dedo, slide, chinelo de quarto, pantufa, babuche",
 }
 
 STYLES = {
@@ -97,7 +101,7 @@ SLEEVES = {
     "LONGA": "manga ate' o punho ou 3/4",
 }
 
-CATEGORIES_WITHOUT_SLEEVE = {"CALCA", "SHORT", "SAIA", "TENIS", "SAPATO"}
+CATEGORIES_WITHOUT_SLEEVE = {"CALCA", "SHORT", "SAIA", "TENIS", "SAPATO", "SANDALIA", "CHINELO"}
 
 
 def normalize_value(value, allowed: dict):

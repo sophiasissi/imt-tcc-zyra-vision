@@ -32,11 +32,16 @@ def health_check():
 
 
 @app.post("/detect-color")
-def detect_color(file: UploadFile = File(...)):
+def detect_color(file: UploadFile = File(...), regiao: str = "foto"):
+    """
+    regiao=mira: o app ja mandou so' a area da mira (o recorte central de
+    CROP_RATIO), alguns KB em vez da foto inteira. Sem o parametro, o recorte
+    e' feito aqui, como antes.
+    """
     try:
         image_bytes = file.file.read()
 
-        return detect_dominant_color(image_bytes)
+        return detect_dominant_color(image_bytes, ja_recortada=regiao == "mira")
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
 
