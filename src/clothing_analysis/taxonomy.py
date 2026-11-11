@@ -21,12 +21,27 @@ CATEGORIES = {
     "CROPPED": "peca de cima curta que termina acima do umbigo (mais comprida que um top), de qualquer manga, inclusive tomara que caia",
     "TOP": "top justo que so cobre o busto e termina logo abaixo dele: top de academia, top de bojo, faixa estreita",
     "BODY": "body: peca de cima inteirica, fechada entre as pernas, como um maio com ou sem manga",
-    "MOLETOM": (
-        "blusa de frio grossa e fechada na frente: moletom felpudo por dentro (blusao, canguru, com "
-        "capuz), sueter, trico. Blusa fina de manga longa NAO e' moletom"
+    # Corset separado (28/10/2026): com a amarracao na frente, saia como
+    # colete, e o motor o punha por cima de outra blusa.
+    "CORSET": (
+        "corset, corpete ou bustie: peca de cima estruturada com pelo menos um sinal forte: amarracao "
+        "com ilhoses ou passantes, fileira de colchetes, barbatanas ou barra em V (bico na frente)"
     ),
-    "JAQUETA": "jaqueta, casaco, cardiga, blusa de frio aberta na frente (ziper ou botoes), inclusive moletom com ziper, corta-vento",
+    "MOLETOM": (
+        "blusa de moletom fechada na frente: malha grossa e felpuda por dentro (blusao, canguru, com "
+        "capuz). Blusa fina de manga longa NAO e' moletom; malha de trico ou la e' SUETER"
+    ),
+    # Sueter separado do moletom (10/11/2026, pedido da Sophia): o sueter
+    # listrado de trico dela estava salvo como "moletom preto".
+    "SUETER": (
+        "sueter, pulover ou blusa de frio de trico, croche ou la, fechada na frente (sem ziper nem "
+        "botoes), de gola redonda, V ou alta. Aberto na frente com botoes e' JAQUETA (cardiga)"
+    ),
+    "JAQUETA": "jaqueta, casaco, cardiga, blusa de frio aberta na frente (ziper ou botoes), com manga, inclusive moletom com ziper, corta-vento",
     "BLAZER": "blazer, paleto",
+    # Colete separado (23/10/2026): salvo como blusa ou jaqueta, entrava duas
+    # vezes no mesmo look, um como peca de cima e outro como camada.
+    "COLETE": "colete: peca SEM MANGA com abotoamento ou abertura na frente, de alfaiataria, trico, jeans, couro ou puffer, inclusive o colete social usado como blusa. Com amarracao de cordao na frente e' CORSET",
     "CALCA": "calca de qualquer tecido, legging, calca de pijama",
     "SHORT": "short, bermuda",
     "SAIA": "saia de qualquer comprimento",
@@ -34,7 +49,10 @@ CATEGORIES = {
     "TENIS": "tenis",
     # Calcados abertos separados do sapato (20/10/2026): chinelo saia como
     # sapato e entrava em look de festa e de trabalho.
-    "SAPATO": "calcado fechado: sapato social, bota, sapatilha, mocassim, scarpin, oxford",
+    "SAPATO": "calcado fechado que termina abaixo do tornozelo: sapato social, sapatilha, mocassim, scarpin, oxford, salto fechado",
+    # Bota separada do sapato (05/11/2026): a bota castanha de couro da Sophia
+    # saia como sapato. O cano fica no campo BOOT_SHAFTS.
+    "BOTA": "bota de qualquer cano: chelsea, coturno, bota western ou texana, bota de montaria, galocha, bota over the knee. Tenis de cano alto continua TENIS",
     "SANDALIA": "sandalia aberta com tiras: rasteira, sandalia de salto, papete, anabela aberta",
     "CHINELO": "chinelo de dedo, slide, chinelo de quarto, pantufa, babuche",
 }
@@ -42,7 +60,13 @@ CATEGORIES = {
 STYLES = {
     "CASUAL": "uso cotidiano descontraido",
     "SOCIAL": "formal, de escritorio",
-    "ESPORTIVO": "pratica esportiva",
+    # Esportivo e' so' a roupa feita para treinar (10/11/2026): a camiseta
+    # dry-fit da Nike da Sophia saia num look de shopping.
+    "ESPORTIVO": (
+        "roupa feita para treinar e suar: dry-fit, tecido tecnologico, legging e top de academia, "
+        "short de corrida, tenis de corrida ou de treino. Tenis de passeio (couro, lona, retro) e "
+        "moletom de marca para sair NAO sao esportivos"
+    ),
     "STREETWEAR": "urbano, oversized, estampas graficas",
     "ELEGANTE": "sofisticado, para eventos",
     "BASICO": "peca coringa, sem elementos marcantes",
@@ -60,7 +84,7 @@ OCCASIONS = {
     "DIA_A_DIA": "rotina, faculdade, passeio",
     "TRABALHO": "escritorio, reuniao",
     "FESTA": "festa, balada, casamento, evento",
-    "ACADEMIA": "treino, corrida",
+    "ACADEMIA": "atividade fisica em que se sua: treino, corrida, caminhada, trilha, bike",
     "PRAIA": "praia, piscina, calor",
     "CASA": "ficar em casa, dormir; pijama",
 }
@@ -87,7 +111,10 @@ MATERIALS = {
     "TRICO": "trico, croche, la, fio grosso",
     "SOFT": "soft, fleece, plush ou pelucia: tecido de pelinho macio (pijama, manta)",
     "LINHO": "linho",
-    "ALFAIATARIA": "tecido de alfaiataria: calca social, blazer, terno, sarja e gabardine",
+    # Alfaiataria e' o corte, nao a fibra (10/11/2026): o corte vai no campo
+    # tailored. Aqui fica so' o tecido plano encorpado de alfaiataria cuja
+    # fibra nao da para reconhecer pela foto.
+    "ALFAIATARIA": "tecido plano encorpado de alfaiataria (crepe, gabardine, la fria, sarja social) quando a fibra nao e' reconhecivel",
     "CETIM": "cetim, seda, tecido acetinado e brilhante",
     "VISCOSE": "viscose ou tecido leve, fluido e fosco que cai solto",
     "VELUDO": "veludo, veludo cotele, plush liso e brilhante",
@@ -101,7 +128,20 @@ SLEEVES = {
     "LONGA": "manga ate' o punho ou 3/4",
 }
 
-CATEGORIES_WITHOUT_SLEEVE = {"CALCA", "SHORT", "SAIA", "TENIS", "SAPATO", "SANDALIA", "CHINELO"}
+# Altura do cano da bota (lista da Sophia, 05/11/2026). Nulo nas outras pecas.
+BOOT_SHAFTS = {
+    "CURTO": "ate' o tornozelo ou logo acima: chelsea, coturno baixo, bota de salto curta",
+    "MEDIO": "no meio da canela, entre o tornozelo e o joelho: western, texana, coturno de cano medio",
+    "LONGO": "logo abaixo do joelho, cobrindo a panturrilha: bota de montaria, bota social de cano alto",
+    "ACIMA_DO_JOELHO": "over the knee: o cano passa do joelho e cobre parte da coxa",
+}
+
+# Pecas que podem ter corte de alfaiataria (vinco, cos estruturado, bolso faca).
+CATEGORIES_WITH_TAILORING = {"CALCA", "SHORT", "SAIA", "VESTIDO", "BLAZER", "COLETE", "JAQUETA"}
+# Pecas de cima que podem ter gola de camisa (colarinho): camisa, polo, chemise.
+CATEGORIES_WITH_COLLAR = {"CAMISETA", "CAMISA", "BLUSA", "BODY", "CROPPED", "VESTIDO"}
+
+CATEGORIES_WITHOUT_SLEEVE = {"CALCA", "SHORT", "SAIA", "TENIS", "SAPATO", "BOTA", "SANDALIA", "CHINELO"}
 
 
 def normalize_value(value, allowed: dict):
